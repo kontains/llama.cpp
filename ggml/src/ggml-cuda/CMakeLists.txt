@@ -33,13 +33,14 @@ if (CUDAToolkit_FOUND)
             if (GGML_CUDA_F16 OR GGML_CUDA_DMMV_F16)
                 # FP16 support (Pascal and newer)
                 list(APPEND ARCH_LIST "60-virtual")
-            else()
-                # Maxwell and newer
-                list(APPEND ARCH_LIST "50-virtual")
+            endif()
+
+            if (CUDAToolkit_VERSION VERSION_LESS "13")
+                list(APPEND ARCH_LIST 50-virtual 61-virtual 70-virtual)
             endif()
 
             # Always included after base architecture assuming CUDA toolkit version is 11.1 or higher
-            list(APPEND ARCH_LIST "61-virtual" "70-virtual" "75-virtual" "80-virtual" "86-real")
+            list(APPEND ARCH_LIST "75-virtual" "80-virtual" "86-real")
 
             # Version-dependent architectures for newer GPUs
             if (CUDAToolkit_VERSION VERSION_GREATER_EQUAL "11.8")
