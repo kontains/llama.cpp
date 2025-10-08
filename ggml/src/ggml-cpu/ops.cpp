@@ -5513,6 +5513,7 @@ static void ggml_mrope_cache_init(
         }
 
         float theta = theta_t;
+
         if (sector >= sections[0] && sector < sec_w) {
             theta = theta_h;
         }
