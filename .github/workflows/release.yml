@@ -18,7 +18,7 @@ concurrency:
 
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-  CMAKE_ARGS: "-DLLAMA_BUILD_EXAMPLES=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_TOOLS=ON -DLLAMA_BUILD_SERVER=ON -DGGML_RPC=ON"
+  CMAKE_ARGS: "-DLLAMA_BUILD_EXAMPLES=ON -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_TOOLS=ON -DLLAMA_BUILD_SERVER=ON -DGGML_RPC=ON"
 
 jobs:
   macOS-arm64:
@@ -148,8 +148,8 @@ jobs:
         include:
           - build: 'x64'
             os: ubuntu-22.04
-          - build: 's390x'
-            os: ubuntu-24.04-s390x
+          #- build: 's390x'
+          #  os: ubuntu-24.04-s390x
           # GGML_BACKEND_DL and GGML_CPU_ALL_VARIANTS are not currently supported on arm
           # - build: 'arm64'
           #   os: ubuntu-22.04-arm
@@ -421,7 +421,7 @@ jobs:
 
     strategy:
       matrix:
-        cuda: ['12.4', '13.1']
+        cuda: ['12.8', '13.1']
 
     steps:
       - name: Clone
