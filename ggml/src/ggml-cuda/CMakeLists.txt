@@ -47,7 +47,7 @@ if (CUDAToolkit_FOUND)
                 list(APPEND ARCH_LIST "89-real")
             endif()
 
-            if (CUDAToolkit_VERSION VERSION_GREATER_EQUAL "12.8" AND CUDAToolkit_VERSION VERSION_LESS "13")
+            if (CUDAToolkit_VERSION VERSION_GREATER_EQUAL "12.8" AND VERSION_LESS "13")
                 list(APPEND ARCH_LIST "120-real")
             endif()
 
