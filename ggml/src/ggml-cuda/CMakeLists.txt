@@ -54,13 +54,14 @@ if (CUDAToolkit_FOUND)
             set(CMAKE_CUDA_ARCHITECTURES ${ARCH_LIST})
         endif()
     endif()
+    message(STATUS "Using CUDA architectures: ${CMAKE_CUDA_ARCHITECTURES}")
 
     enable_language(CUDA)
 
     # Replace any 12x-real architectures with 12x{a}-real. FP4 ptx instructions are not available in just 12x
     if (GGML_NATIVE)
         set(PROCESSED_ARCHITECTURES "")
-        if (NOT DEFINED CMAKE_CUDA_ARCHITECTURES AND CMAKE_CUDA_ARCHITECTURES_NATIVE)
+        if (CMAKE_CUDA_ARCHITECTURES_NATIVE)
             set(ARCH_LIST ${CMAKE_CUDA_ARCHITECTURES_NATIVE})
         else()
             set(ARCH_LIST ${CMAKE_CUDA_ARCHITECTURES})
@@ -82,7 +83,6 @@ if (CUDAToolkit_FOUND)
             endif()
         endforeach()
     endif()
-    message(STATUS "Using CUDA architectures: ${CMAKE_CUDA_ARCHITECTURES}")
 
     file(GLOB   GGML_HEADERS_CUDA "*.cuh")
     list(APPEND GGML_HEADERS_CUDA "../../include/ggml-cuda.h")
