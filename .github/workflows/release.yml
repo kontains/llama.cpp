@@ -1042,6 +1042,18 @@ jobs:
 
             ${{ github.event.head_commit.message }}
 
+            ⚠️ CUDA Build Notice
+
+            CUDA builds have been downgraded to CUDA 13.1 due to an NVIDIA bug that affects certain quantized models when binaries are compiled with CUDA 13.2.
+            - This issue only impacts llama.cpp binaries built with CUDA 13.2 (e.g. previous releases).
+            - Your installed CUDA 13.2 drivers are not affected — no downgrade is needed.
+            - NVIDIA is currently working on a fix.
+
+            Recommended workaround: Use binaries compiled with CUDA 12.8 or CUDA 13.1 for now.
+
+            Note: [ik_llama.cpp](https://github.com/Thireus/ik_llama.cpp/releases) is also affected by this issue.
+            Read more about it here: https://github.com/Thireus/GGUF-Tool-Suite/issues/71
+
             </details>
 
             For ref. CUDA 12.8 supports Maxwell (5.0) to Hopper (9.0), while CUDA 13.1 supports Turing (7.5) to Blackwell (12.1) microarchitectures.
