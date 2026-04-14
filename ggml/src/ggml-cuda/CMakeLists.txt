@@ -59,6 +59,7 @@ if (CUDAToolkit_FOUND)
                 # However, the architectures 120a-real and 121a-real should work with basically any CMake version and
                 #     until the release of e.g. Rubin there is no benefit to shipping virtual architectures for Blackwell.
                 list(APPEND ARCH_LIST "120a-real")
+                list(APPEND ARCH_LIST "121a-real")
             endif()
 
             set(CMAKE_CUDA_ARCHITECTURES ${ARCH_LIST})
