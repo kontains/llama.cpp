@@ -353,6 +353,7 @@ struct llm_tokenizer_bpe : llm_tokenizer {
             case LLAMA_VOCAB_PRE_TYPE_CODESHELL:
             case LLAMA_VOCAB_PRE_TYPE_EXAONE:
             case LLAMA_VOCAB_PRE_TYPE_MINERVA:
+            case LLAMA_VOCAB_PRE_TYPE_MELLUM2:
                 regex_exprs = {
                     "\\p{N}",
                     "'s|'t|'re|'ve|'m|'ll|'d| ?\\p{L}+| ?\\p{N}+| ?[^\\s\\p{L}\\p{N}]+|\\s+(?!\\S)",
@@ -1814,6 +1815,8 @@ struct llama_vocab::impl {
     // set of all tokens that cause "end of generation"
     std::set<llama_token> special_eog_ids;
 
+    std::vector<llama_token> suppress_tokens;
+
     std::unique_ptr<llm_tokenizer> tokenizer;
 
     std::vector<char> precompiled_charsmap;
@@ -2325,6 +2328,9 @@ void llama_vocab::impl::load(llama_model_loader & ml, const LLM_KV & kv) {
                 tokenizer_pre == "solar-open") {
                 pre_type = LLAMA_VOCAB_PRE_TYPE_SOLAR_OPEN;
                 clean_spaces = false;
+            } else if (
+                tokenizer_pre == "mellum2") {
+                pre_type = LLAMA_VOCAB_PRE_TYPE_MELLUM2;
             } else {
                 throw std::runtime_error(format("unknown pre-tokenizer type: '%s'", tokenizer_pre.c_str()));
             }
@@ -2528,6 +2534,16 @@ void llama_vocab::impl::load(llama_model_loader & ml, const LLM_KV & kv) {
 
         // Lowercase normalizer flag (consulted by WPM / whitespace BPE)
         ml.get_key(LLM_KV_TOKENIZER_NORMALIZER_LOWERCASE, normalizer_lowercase, false);
+
+        // suppress tokens
+        {
+            const int suppress_idx = gguf_find_key(ctx, kv(LLM_KV_TOKENIZER_SUPPRESS_TOKENS).c_str());
+            if (suppress_idx != -1) {
+                const int n = gguf_get_arr_n(ctx, suppress_idx);
+                const int32_t * data = (const int32_t *) gguf_get_arr_data(ctx, suppress_idx);
+                suppress_tokens.assign(data, data + n);
+            }
+        }
 
         // auto-detect special tokens by text
         // TODO: convert scripts should provide these tokens through the KV metadata LLM_KV_TOKENIZER_...
@@ -3955,6 +3971,10 @@ bool llama_vocab::get_treat_whitespace_as_suffix() const {
 
 bool llama_vocab::get_normalizer_lowercase() const {
     return pimpl->normalizer_lowercase;
+}
+
+const std::vector<llama_token> & llama_vocab::get_suppress_tokens() const {
+    return pimpl->suppress_tokens;
 }
 
 int llama_vocab::max_token_len() const {
