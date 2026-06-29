@@ -1538,6 +1538,19 @@ private:
                 /* media_path            */ params_base.media_path,
                 /* force_pure_content    */ params_base.force_pure_content_parser
             };
+
+            {
+                auto caps = common_chat_templates_get_caps(chat_params.tmpls.get());
+                auto it = params_base.default_template_kwargs.find("preserve_reasoning");
+                bool supported = caps.at("supports_preserve_reasoning");
+                bool enabled = it != params_base.default_template_kwargs.end();
+                if (supported && !enabled) {
+                    SRV_INF("%s", "chat template supports preserving reasoning, consider enabling it via --reasoning-preserve\n");
+                }
+                if (!supported && enabled) {
+                    SRV_WRN("%s", "chat template does NOT support preserving reasoning, --reasoning-preserve has no effect\n");
+                }
+            }
         }
 
         return true;
@@ -2450,6 +2463,8 @@ private:
 
                     server_slot * slot = get_slot_by_cmpl_id(task.params.control_cmpl_id);
                     if (slot == nullptr) {
+                        SRV_WRN("control %s on unknown completion id=%s, no live slot\n",
+                                task.params.control_action.c_str(), task.params.control_cmpl_id.c_str());
                         res->success = false;
                         res->message = "no active completion for this id";
                         queue_results.send(std::move(res));
