@@ -7319,6 +7319,14 @@ static bool ggml_opencl_supports_op(ggml_backend_dev_t dev, const struct ggml_te
                 return false;
             }
 
+            // Some compilers for A7x (Adreno 740, compiler E031.41) crashes when
+            // building FA kernels with mixed or quant types (f32_f16, f32_q8_0, f32_q4_0)
+            // Here we skip all A7x for these kernels to avoid crash
+            if (backend_ctx->adreno_gen == ADRENO_GPU_GEN::A7X &&
+                (is_f32_f16 || is_f32_q8_0 || is_f32_q4_0)) {
+                return false;
+            }
+
             if (dk == 512) {
                 if (backend_ctx->gpu_family == INTEL) {
                     return false;
@@ -10525,10 +10533,16 @@ static ggml_backend_buffer_t ggml_backend_opencl_buffer_type_alloc_buffer(ggml_b
 
     cl_int err;
     cl_mem mem = clCreateBuffer(backend_ctx->context, CL_MEM_READ_WRITE, size, NULL, &err);
+#if GGML_OPENCL_TARGET_VERSION >= 300
+    // clCreateBufferWithProperties and cl_mem_properties are OpenCL 3.0. Drivers older than
+    // that do not export the symbol, so a build targeting them fails to link. The large
+    // buffer extension is only ever enabled on drivers that are well past 3.0, so this path
+    // is dead there anyway.
     if (err != CL_SUCCESS && backend_ctx->adreno_use_large_buffer) {
         cl_mem_properties props[] = { 0x41A6 /* CL_LARGE_BUFFER_QCOM */, 1, 0 };
         mem = clCreateBufferWithProperties(backend_ctx->context, props, CL_MEM_READ_WRITE, size, NULL, &err);
     }
+#endif
 
     if (err != CL_SUCCESS) {
         GGML_LOG_INFO("%s: failed to allocate %.2f MiB\n", __func__, size / 1024.0 / 1024.0);
